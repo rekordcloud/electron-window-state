@@ -80,7 +80,7 @@ module.exports = function (options) {
 
     // for top taskbar
     if (state.y < display.bounds.height - display.workArea.height) {
-      state.y = state.workArea.y;
+      state.y = display.workArea.y;
     }
 
     // for bottom taskbar
