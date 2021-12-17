@@ -54,6 +54,41 @@ module.exports = function (options) {
     );
   }
 
+
+  function resizeAndReplaceWindowForWorkArea(display) {
+    if (state.isFullScreen || state.isMaximized) {
+      return;
+    }
+
+    if (state.width > display.workArea.width) {
+      state.width = display.workArea.width;
+    }
+
+    if (state.height > display.workArea.height) {
+      state.height = display.workArea.height;
+    }
+
+    // for left taskbar
+    if (state.x < display.workArea.x) {
+      state.x = display.workArea.x;
+    }
+
+    // for right taskbar
+    if (state.x + state.width > display.workArea.width) {
+      state.x = display.workArea.x + display.workArea.width - state.width;
+    }
+
+    // for top taskbar
+    if (state.y < display.bounds.height - display.workArea.height) {
+      state.y = state.workArea.y;
+    }
+
+    // for bottom taskbar
+    if (state.y + state.height > display.workArea.height) {
+      state.y = display.workArea.y + display.workArea.height - state.height;
+    }
+  }
+
   function ensureWindowVisibleOnSomeDisplay() {
     const visible = screen.getAllDisplays().some(display => {
       return windowWithinBounds(display.bounds);
@@ -64,6 +99,8 @@ module.exports = function (options) {
       // Reset it to safe defaults.
       return resetStateToDefault();
     }
+
+    resizeAndReplaceWindowForWorkArea(visible[0]);
   }
 
   function validateState() {
