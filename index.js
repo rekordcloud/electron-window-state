@@ -39,8 +39,8 @@ module.exports = function (options) {
     state = {
       width: config.defaultWidth || 800,
       height: config.defaultHeight || 600,
-      x: 0,
-      y: 0,
+      x: undefined,
+      y: undefined,
       displayBounds
     };
   }
@@ -90,17 +90,15 @@ module.exports = function (options) {
   }
 
   function ensureWindowVisibleOnSomeDisplay() {
-    const visible = screen.getAllDisplays().some(display => {
-      return windowWithinBounds(display.bounds);
-    });
+    const display = screen.getAllDisplays().find(v => windowWithinBounds(v.bounds));
 
-    if (!visible) {
+    if (!display) {
       // Window is partially or fully not visible now.
       // Reset it to safe defaults.
       return resetStateToDefault();
     }
 
-    resizeAndReplaceWindowForWorkArea(visible[0]);
+    resizeAndReplaceWindowForWorkArea(display);
   }
 
   function validateState() {
