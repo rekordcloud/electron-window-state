@@ -133,10 +133,38 @@ module.exports = function (options) {
     } catch (err) {}
   }
 
+  function checkUpdatedStateCompareToReadedData() {
+    const checkUpdateDisplayBounds = () => {
+      if (readedData.displayBounds.x !== state.displayBounds.x ||
+        readedData.displayBounds.y !== state.displayBounds.y ||
+        readedData.displayBounds.width !== state.displayBounds.width ||
+        readedData.displayBounds.height !== state.displayBounds.height) {
+          return true;
+        }
+        return false;
+    };
+  
+    if (readedData.x !== state.x || 
+      readedData.y !== state.y || 
+      readedData.width !== state.width ||
+      readedData.height !== state.height ||
+      readedData.isMaximized !== state.isMaximized ||
+      readedData.isFullScreen !== state.isFullScreen || 
+      checkUpdateDisplayBounds()) {
+        return true;
+      }
+
+    return false;
+  }
+
   function saveState(win) {
     // Update window state only if it was provided
     if (win) {
       updateState(win);
+    }
+
+    if (!checkUpdatedStateCompareToReadedData()) {
+      return;
     }
 
     // Save state
@@ -189,9 +217,11 @@ module.exports = function (options) {
     }
   }
 
+  let readedData;
   // Load previous state
   try {
-    state = jsonfile.readFileSync(fullStoreFileName);
+    readedData = jsonfile.readFileSync(fullStoreFileName);
+    state = readedData;
   } catch (err) {
     // Don't care
   }
