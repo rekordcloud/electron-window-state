@@ -39,8 +39,8 @@ module.exports = function (options) {
     state = {
       width: config.defaultWidth || 800,
       height: config.defaultHeight || 600,
-      x: 0,
-      y: 0,
+      x: undefined,
+      y: undefined,
       displayBounds
     };
   }
@@ -54,16 +54,51 @@ module.exports = function (options) {
     );
   }
 
-  function ensureWindowVisibleOnSomeDisplay() {
-    const visible = screen.getAllDisplays().some(display => {
-      return windowWithinBounds(display.bounds);
-    });
 
-    if (!visible) {
+  function resizeAndReplaceWindowForWorkArea(display) {
+    if (state.isFullScreen || state.isMaximized) {
+      return;
+    }
+
+    if (state.width > display.workArea.width) {
+      state.width = display.workArea.width;
+    }
+
+    if (state.height > display.workArea.height) {
+      state.height = display.workArea.height;
+    }
+
+    // for left taskbar
+    if (state.x < display.workArea.x) {
+      state.x = display.workArea.x;
+    }
+
+    // for right taskbar
+    if (state.x + state.width > display.workArea.width) {
+      state.x = display.workArea.x + display.workArea.width - state.width;
+    }
+
+    // for top taskbar
+    if (state.y < display.bounds.height - display.workArea.height) {
+      state.y = display.workArea.y;
+    }
+
+    // for bottom taskbar
+    if (state.y + state.height > display.workArea.height) {
+      state.y = display.workArea.y + display.workArea.height - state.height;
+    }
+  }
+
+  function ensureWindowVisibleOnSomeDisplay() {
+    const display = screen.getAllDisplays().find(v => windowWithinBounds(v.bounds));
+
+    if (!display) {
       // Window is partially or fully not visible now.
       // Reset it to safe defaults.
       return resetStateToDefault();
     }
+
+    resizeAndReplaceWindowForWorkArea(display);
   }
 
   function validateState() {
@@ -98,10 +133,38 @@ module.exports = function (options) {
     } catch (err) {}
   }
 
+  function checkUpdatedStateCompareToReadedData() {
+    const checkUpdateDisplayBounds = () => {
+      if (readedData.displayBounds.x !== state.displayBounds.x ||
+        readedData.displayBounds.y !== state.displayBounds.y ||
+        readedData.displayBounds.width !== state.displayBounds.width ||
+        readedData.displayBounds.height !== state.displayBounds.height) {
+          return true;
+        }
+        return false;
+    };
+  
+    if (readedData.x !== state.x || 
+      readedData.y !== state.y || 
+      readedData.width !== state.width ||
+      readedData.height !== state.height ||
+      readedData.isMaximized !== state.isMaximized ||
+      readedData.isFullScreen !== state.isFullScreen || 
+      checkUpdateDisplayBounds()) {
+        return true;
+      }
+
+    return false;
+  }
+
   function saveState(win) {
     // Update window state only if it was provided
     if (win) {
       updateState(win);
+    }
+
+    if (!checkUpdatedStateCompareToReadedData()) {
+      return;
     }
 
     // Save state
@@ -154,9 +217,11 @@ module.exports = function (options) {
     }
   }
 
+  let readedData;
   // Load previous state
   try {
-    state = jsonfile.readFileSync(fullStoreFileName);
+    readedData = jsonfile.readFileSync(fullStoreFileName);
+    state = readedData;
   } catch (err) {
     // Don't care
   }

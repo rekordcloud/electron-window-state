@@ -1,4 +1,10 @@
-# electron-window-state [![Build Status](https://travis-ci.org/mawie81/electron-window-state.svg)](https://travis-ci.org/mawie81/electron-window-state)
+# electron-window-state
+
+## This repository is forked from origin
+- Difference from origin
+  - Replace and Resize to window if conflict windows taskbar position.
+  - Updated to dependent libraries.
+  - If haven't changed window state compared to saved data, does not save on close event.
 
 > A library to store and restore window sizes and positions for your
 [Electron](http://electron.atom.io) app
@@ -8,7 +14,7 @@
 ## Install
 
 ```
-$ npm install --save electron-window-state
+$ npm install --save @madosuki/electron-window-state
 ```
 
 ## Usage

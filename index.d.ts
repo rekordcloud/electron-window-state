@@ -37,9 +37,9 @@ declare namespace windowStateKeeper {
         /** The saved width of loaded state. `defaultWidth` if the state has not been saved yet. */
         width: number;
         /** The saved x coordinate of the loaded state. `undefined` if the state has not been saved yet. */
-        x: number;
+        x: number | undefined;
         /** The saved y coordinate of the loaded state. `undefined` if the state has not been saved yet. */
-        y: number;
+        y: number | undefined;
     }
 }
 
