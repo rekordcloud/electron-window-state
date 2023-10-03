@@ -54,7 +54,7 @@ module.exports = function (options) {
       ||
       (
         (state.x + state.width <= bounds.x + bounds.width) &&
-        (state.y + state.height <= bounds.y + bounds.height)
+        (state.y <= bounds.y + bounds.height)
       )
     )
   }
