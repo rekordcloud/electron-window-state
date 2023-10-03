@@ -20,11 +20,11 @@ module.exports = function (options) {
   }, options);
   const fullStoreFileName = path.join(config.path, config.file);
 
-  function isNormal(win) {
+  function isNormal (win) {
     return !win.isMaximized() && !win.isMinimized() && !win.isFullScreen();
   }
 
-  function hasBounds() {
+  function hasBounds () {
     return state &&
       Number.isInteger(state.x) &&
       Number.isInteger(state.y) &&
@@ -32,7 +32,7 @@ module.exports = function (options) {
       Number.isInteger(state.height) && state.height > 0;
   }
 
-  function resetStateToDefault() {
+  function resetStateToDefault () {
     const displayBounds = screen.getPrimaryDisplay().bounds;
 
     // Reset state to default values on the primary display
@@ -45,18 +45,24 @@ module.exports = function (options) {
     };
   }
 
-  function windowWithinBounds(bounds) {
+  function isWindowPartiallyWithinBounds (bounds) {
     return (
-      state.x >= bounds.x &&
-      state.y >= bounds.y &&
-      state.x + state.width <= bounds.x + bounds.width &&
-      state.y + state.height <= bounds.y + bounds.height
-    );
+      (
+        (state.x >= bounds.x && state.x < bounds.x + bounds.width) &&
+        (state.y >= bounds.y && state.y < bounds.y + bounds.height)
+      )
+      ||
+      (
+        (state.x + state.width <= bounds.x + bounds.width) &&
+        (state.y + state.height <= bounds.y + bounds.height)
+      )
+    )
   }
 
-  function ensureWindowVisibleOnSomeDisplay() {
+
+  function ensureWindowVisibleOnSomeDisplay () {
     const visible = screen.getAllDisplays().some(display => {
-      return windowWithinBounds(display.bounds);
+      return isWindowPartiallyWithinBounds(display.bounds);
     });
 
     if (!visible) {
@@ -66,7 +72,7 @@ module.exports = function (options) {
     }
   }
 
-  function validateState() {
+  function validateState () {
     const isValid = state && (hasBounds() || state.isMaximized || state.isFullScreen);
     if (!isValid) {
       state = null;
@@ -78,7 +84,7 @@ module.exports = function (options) {
     }
   }
 
-  function updateState(win) {
+  function updateState (win) {
     win = win || winRef;
     if (!win) {
       return;
@@ -95,10 +101,11 @@ module.exports = function (options) {
       state.isMaximized = win.isMaximized();
       state.isFullScreen = win.isFullScreen();
       state.displayBounds = screen.getDisplayMatching(winBounds).bounds;
-    } catch (err) {}
+    } catch (err) {
+    }
   }
 
-  function saveState(win) {
+  function saveState (win) {
     // Update window state only if it was provided
     if (win) {
       updateState(win);
@@ -113,23 +120,23 @@ module.exports = function (options) {
     }
   }
 
-  function stateChangeHandler() {
+  function stateChangeHandler () {
     // Handles both 'resize' and 'move'
     clearTimeout(stateChangeTimer);
     stateChangeTimer = setTimeout(updateState, eventHandlingDelay);
   }
 
-  function closeHandler() {
+  function closeHandler () {
     updateState();
   }
 
-  function closedHandler() {
+  function closedHandler () {
     // Unregister listeners and save state
     unmanage();
     saveState();
   }
 
-  function manage(win) {
+  function manage (win) {
     if (config.maximize && state.isMaximized) {
       win.maximize();
     }
@@ -143,7 +150,7 @@ module.exports = function (options) {
     winRef = win;
   }
 
-  function unmanage() {
+  function unmanage () {
     if (winRef) {
       winRef.removeListener('resize', stateChangeHandler);
       winRef.removeListener('move', stateChangeHandler);
@@ -171,13 +178,13 @@ module.exports = function (options) {
   }, state);
 
   return {
-    get x() { return state.x; },
-    get y() { return state.y; },
-    get width() { return state.width; },
-    get height() { return state.height; },
-    get displayBounds() { return state.displayBounds; },
-    get isMaximized() { return state.isMaximized; },
-    get isFullScreen() { return state.isFullScreen; },
+    get x () { return state.x; },
+    get y () { return state.y; },
+    get width () { return state.width; },
+    get height () { return state.height; },
+    get displayBounds () { return state.displayBounds; },
+    get isMaximized () { return state.isMaximized; },
+    get isFullScreen () { return state.isFullScreen; },
     saveState,
     unmanage,
     manage,
